@@ -2,9 +2,12 @@ from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse
 from goods.models import Products
 
-def catalog(request):
+def catalog(request, category_slug):
 
-  goods = Products.objects.all()
+  if category_slug == 'all':
+    goods = Products.objects.all()
+  else:
+    goods = get_object_or_404(Products.objects.filter(category__slug=category_slug))
 
   context = {
     'title': 'Home - Каталог',
