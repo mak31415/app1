@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
-from .models import Cart
+from carts.models import Cart
 from django.template.loader import render_to_string
 from goods.models import Products
 from carts.utils import get_user_carts
@@ -19,6 +19,17 @@ def cart_add(request):
             cart.save()
         else:
             cart = Cart.objects.create(user=request.user, product=product, quantity=1)
+
+    else:
+        cart = Cart.objects.filter(session_key=request.session.session_key, product=product)
+
+        if cart.exists():
+            cart = cart.first()
+            cart.quantity += 1
+            cart.save()
+
+        else:
+            Cart.objects.create(session_key=request.session.session_key, product=product, quantity=1)
     
     user_cart = get_user_carts(request)
     cart_items_html = render_to_string(

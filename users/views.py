@@ -4,6 +4,7 @@ from django.contrib import auth, messages
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
+from carts.models import Cart
 
 def login(request):
   if request.method == 'POST':
@@ -12,10 +13,15 @@ def login(request):
       username = request.POST['username']
       password = request.POST['password']
       user = auth.authenticate(username=username, password=password)
+
+      session_key = request.session.session_key
       
       if user:
         auth.login(request, user)
         messages.success(request, 'Вы вошли в акаунт')
+
+        if session_key:
+          Cart.objects.filter(session_key=session_key).update(user=user)
 
         redirect_page = request.POST.get('next', None)
         if redirect_page and redirect_page != reverse('user:logout'):
@@ -39,8 +45,15 @@ def registration(request):
     form = UserRegistrationForm(request.POST)
     if form.is_valid():
       form.save()
+
+      session_key = request.session.session_key
+
       user = form.instance
       auth.login(request, user)
+
+      if session_key:
+        Cart.objects.filter(session_key=session_key).update(user=user)
+
       messages.success(request, f'{user.username}, вы успешно зарегистрировались')
       return HttpResponseRedirect(reverse('main:index'))
     
