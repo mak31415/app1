@@ -20,7 +20,19 @@ class CreateOrderForm(forms.Form):
             ("1", 'True'),
             ],)
 
+    def clean_phone_number(self):
+        phone_number = self.cleaned_data['phone_number']
 
+        if not phone_number.isdigit():
+            raise forms.ValidationError('Номер телефона должен содержать только цифры')
+
+        if not re.match(r'^\d{10}$', phone_number):
+            raise forms.ValidationError('Номер телефона должен содержать 10 цифр')
+        
+        return phone_number
+
+
+    
 
     # first_name = forms.CharField(
     #     widget=forms.TextInput(
